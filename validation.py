@@ -53,4 +53,3 @@ class Validation:
     def is_valid_phone(phone: str):
         pattern = r'^04\d{8}$'
         return re.match(pattern, phone) is not None
-    

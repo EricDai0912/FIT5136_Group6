@@ -1,9 +1,15 @@
 from patient import Patient
+from administrator import Administrator
+from file_handler import FileIO
+from gp import GP
 
 class MPMS:
 
     def __init__(self):
-        self.patients = {}
+        self.patients = FileIO.read_patients_csv()
+        self.gps = FileIO.read_gps_csv()
+        self.administrator = Administrator()
+        self.file_handler = FileIO()
 
     def is_patient_exist(self, email):
         return email in self.patients
@@ -37,6 +43,8 @@ class MPMS:
             raise ValueError(f"Failed to register patient: {e}")
 
         self.patients[new_patient.email] = new_patient
+        self.save_data('P')
+
 
     def login_patient(self, email, password):
 
@@ -48,3 +56,39 @@ class MPMS:
             raise ValueError("Incorrect password")
 
         return patient
+    
+    def login_admin(self, email, password):
+
+        if self.administrator.email != email:
+            raise ValueError("Incorrect Admin Email")
+
+        if self.administrator.password != password:
+            raise ValueError("Incorrect password")
+
+        return self.administrator
+    
+    def create_gp(self, first_name, last_name, email, clinics, specialisation,
+                days_off):
+        try:
+            new_gp = GP(
+                gp_id=None,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                clinics=clinics,
+                specialisation=specialisation,
+                days_off=days_off,
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to Greate gp: {e}")
+        
+        self.gps[new_gp.gp_id] = new_gp
+        self.save_data('G')
+
+        
+
+    def save_data(self, code):
+        if code == 'P' or code == 'A':
+            self.file_handler.write_patients_csv(self.patients)
+        if code == 'G' or code == 'A':
+            self.file_handler.write_gps_csv(self.gps)

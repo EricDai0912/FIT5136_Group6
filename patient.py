@@ -22,3 +22,14 @@ class Patient:
         self.phone_number = phone_number
         self.address = address
     
+    def to_dict(self):
+        return {
+            'email':         self.email,
+            'password':      self.password,
+            'first_name':    self.first_name,
+            'last_name':     self.last_name,
+            'date_of_birth': self.date_of_birth,
+            'gender':        self.gender,
+            'phone_number':  self.phone_number,
+            'address':       self.address
+        }
