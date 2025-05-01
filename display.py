@@ -21,6 +21,53 @@ class Display:
         if self.status_message:
             print(self.status_message)
             self.status_message = ""
+
+    def print_table(self, data):
+        if not data:
+            print("No Record Found.")
+            return
+        
+        data_list = list(data.values())
+        rows = [obj.to_dict() for obj in data_list]
+        headers = ["Option"] + list(rows[0].keys())
+
+        widths = {key: len(key) for key in headers}
+        widths["Option"] = max(widths["Option"], len(str(len(rows))))
+
+        for row in rows:
+            for key, value in row.items():
+                widths[key] = max(widths[key], len(str(value)))
+
+        outline = "+-" + "-+-".join("-" * widths[key] for key in headers) + "-+"
+        inline = "| " + " | ".join(f"{{:<{widths[key]}}}" for key in headers) + " |"
+
+        print(outline)
+        print(inline.format(*headers))
+        print(outline)
+        for idx, row in enumerate(rows, start=1):
+            values = [str(idx)] + [str(row[h]) for h in headers[1:]]
+            print(inline.format(*values))
+        print(outline)
+    
+    def admin_update_delete_clinic(self):
+        while True:
+            self.clear_and_header("Update or Delete Clinic Info")
+            print("\nList of all clinics:\n")
+            self.print_table(self.mpms.clinics)
+            print("\n0: Exit")
+            choice = input("\nPlease enter an option to update or delete: ").strip()
+            if choice == '0':
+                return
+
+    def admin_update_delete_gp(self):
+        while True:
+            self.clear_and_header("Update or Delete GP Info")
+            print("\nList of all GP:\n")
+            self.print_table(self.mpms.gps)
+            print("\n0:Exit")
+            choice = input("\nPlease enter an option to update or delete: ").strip()
+            if choice == '0':
+                return
     
     def admin_create_clinic(self):
         validation = Validation()
@@ -293,7 +340,7 @@ class Display:
             if choice == '1':
                 self.admin_create_gp()
             elif choice == '2':
-                pass
+                self.admin_update_delete_gp()
             elif choice == '0':
                 return
             else:
@@ -310,7 +357,7 @@ class Display:
             if choice == '1':
                 self.admin_create_clinic()
             elif choice == '2':
-                pass
+                self.admin_update_delete_clinic()
             elif choice == '0':
                 return
             else:
