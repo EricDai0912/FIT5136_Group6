@@ -2,12 +2,14 @@ from patient import Patient
 from administrator import Administrator
 from file_handler import FileIO
 from gp import GP
+from clinic import Clinic
 
 class MPMS:
 
     def __init__(self):
         self.patients = FileIO.read_patients_csv()
         self.gps = FileIO.read_gps_csv()
+        self.clinics = FileIO.read_clinics_csv()
         self.administrator = Administrator()
         self.file_handler = FileIO()
 
@@ -85,10 +87,26 @@ class MPMS:
         self.gps[new_gp.gp_id] = new_gp
         self.save_data('G')
 
+    def create_clinic(self, clinic_name, clinic_suburb, clinic_services,
+                    clinic_openning_hours):
+        try:
+            new_clinic = Clinic(
+                clinic_id=None,
+                clinic_name=clinic_name,
+                clinic_suburb=clinic_suburb,
+                clinic_services=clinic_services,
+                clinic_openning_hours=clinic_openning_hours
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to Greate gp: {e}")
         
+        self.clinics[new_clinic.clinic_id] = new_clinic
+        self.save_data('C')
 
     def save_data(self, code):
         if code == 'P' or code == 'A':
             self.file_handler.write_patients_csv(self.patients)
         if code == 'G' or code == 'A':
             self.file_handler.write_gps_csv(self.gps)
+        if code == 'C' or code == 'A':
+            self.file_handler.write_clinics_csv(self.clinics)

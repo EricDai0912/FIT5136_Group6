@@ -21,6 +21,54 @@ class Display:
         if self.status_message:
             print(self.status_message)
             self.status_message = ""
+    
+    def admin_create_clinic(self):
+        validation = Validation()
+        while True:
+            self.clear_and_header("Create a New Clinic")
+            print("\nClinic Name:")
+            clinic_name = input("> ").strip()
+            if not validation.is_empty(clinic_name):
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+
+        while True:
+            self.clear_and_header("Create a New Clinic")
+            print("\nClinic Suburb:")
+            clinic_suburb = input("> ").strip()
+            if not validation.is_empty(clinic_suburb):
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        
+        while True:
+            self.clear_and_header("Create a New Clinic")
+            print("\nClinic Services:")
+            clinic_services = input("> ").strip()
+            if not validation.is_empty(clinic_services):
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        
+        while True:
+            self.clear_and_header("Create a New Clinic")
+            print("\nClinic Openning Hours:")
+            clinic_openning_hours = input("> ").strip()
+            if not validation.is_empty(clinic_openning_hours):
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        
+        try:
+            self.mpms.create_clinic(
+                clinic_name, clinic_suburb, clinic_services,
+                clinic_openning_hours
+            )
+        except ValueError as e:
+            self.status_message = f"\nCreate GP failed: {e}\n"
+            return
+        return
 
     def admin_create_gp(self):
         validation = Validation()
@@ -239,11 +287,28 @@ class Display:
             self.clear_and_header("GP Management")
             print("1: Create a new GP")
             print("2: Update or Delete GPs")
-            print("0: Logout")
+            print("0: Exit")
             choice = input("\nPlease enter an option: ").strip()
 
             if choice == '1':
                 self.admin_create_gp()
+            elif choice == '2':
+                pass
+            elif choice == '0':
+                return
+            else:
+                self.status_message = "\nError: Invalid option, please try again.\n"
+    
+    def admin_clinic_management(self):
+        while True:
+            self.clear_and_header("Clinic Management")
+            print("1: Create a new Clinic")
+            print("2: Update or Delete Clinics")
+            print("0: Exit")
+            choice = input("\nPlease enter an option: ").strip()
+
+            if choice == '1':
+                self.admin_create_clinic()
             elif choice == '2':
                 pass
             elif choice == '0':
@@ -269,6 +334,7 @@ class Display:
         while True:
             self.clear_and_header("Admin Menu")
             print("4: GP Management")
+            print("5: Clinic Management")
             print("0: Logout")
             choice = input("\nPlease enter an option: ").strip()
 
@@ -276,6 +342,8 @@ class Display:
                 pass
             elif choice == '4':
                 self.admin_gp_management()
+            elif choice == '5':
+                self.admin_clinic_management()
             elif choice == '0':
                 print("\nLogging out...")
                 return
