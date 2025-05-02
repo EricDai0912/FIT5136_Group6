@@ -408,7 +408,7 @@ class Display:
             choice = input("\nPlease enter an option: ").strip()
 
             if choice == '1':
-                self.register()
+                self.patient_login()
             elif choice == '2':
                 self.patient_login()
             elif choice == '3':
