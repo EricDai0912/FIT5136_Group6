@@ -143,6 +143,102 @@ class Display:
             if choice == '0':
                 return
             
+            try:
+                choice = int(choice)
+                if 1 <= choice <= len(self.mpms.gps):
+                    self.admin_update_delete_gp(choice)
+                else:
+                    raise ValueError
+            except ValueError:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
+
+
+    def admin_update_delete_gp(self, idx):
+        gp = list(self.mpms.gps.values())[idx-1]
+        while True:
+            self.clear_and_header("GP Details")
+            print(f"\n1: GP First Name: {gp.first_name}")
+            print(f"\n2: GP Last Name: {gp.last_name}")
+            print(f"\n3: GP Email: {gp.email}")
+            print(f"\n4: GP Clinics: {gp.clinics}")
+            print(f"\n5: GP Specialisation: {gp.specialisation}")
+            print(f"\n6: GP Days_off: {gp.days_off}")
+            print("\n7: Delete")
+            print("\n0: Save&Exit")
+
+            choice = input("\nPlease enter an option to update or delete: ").strip()
+            if choice == '1':
+                while True:
+                    self.clear_and_header("Update GP First Name")
+                    print("\nGP First Name:")
+                    first_name = input("> ").strip()
+                    if not Validation.is_empty(first_name):
+                        gp.first_name = first_name
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '2':
+                while True:
+                    self.clear_and_header("Update GP Last Name")
+                    print("\nGP Last Name:")
+                    last_name = input("> ").strip()
+                    if not Validation.is_empty(last_name):
+                        gp.last_name = last_name
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '3':
+                while True:
+                    self.clear_and_header("Update GP Email")
+                    print("\nGP Email:")
+                    email = input("> ").strip()
+                    if not Validation.is_empty(email) and Validation.is_gp_valid_email(email):
+                        gp.email = email
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"   
+            elif choice == '4':
+                while True:
+                    self.clear_and_header("Update GP Clinics")
+                    print("\nGP Last Name:")
+                    clinics = input("> ").strip()
+                    if not Validation.is_empty(clinics):
+                        gp.clinics = clinics
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"               
+            elif choice == '5':
+                while True:
+                    self.clear_and_header("Update GP Specialisation")
+                    print("\nGP Specialisation:")
+                    specialisation = input("> ").strip()
+                    if not Validation.is_empty(specialisation):
+                        gp.specialisation = specialisation
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"   
+            elif choice == '6':
+                while True:
+                    self.clear_and_header("Update GP Last Name")
+                    print("\nGP Days_off:")
+                    days_off = input("> ").strip()
+                    if not Validation.is_empty(days_off):
+                        gp.days_off = days_off
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '7':
+                choice = input("\nAre you sure you want to delete[Y/Any key]:")
+                if choice == 'Y':
+                    self.mpms.delete_gp(gp.gp_id)
+                    return
+            elif choice == '0':
+                self.mpms.update_gp(gp)
+                return
+            else:
+                self.status_message = "\nError: Invalid option, please try again.\n"
+            
             
     
     def admin_create_clinic(self):
@@ -215,11 +311,11 @@ class Display:
             self.clear_and_header("Create a New GP")
             print("\nEmail:")
             email = input("> ").strip()
-            if not Validation.is_empty(email):
+            if not Validation.is_empty(email) and Validation.is_gp_valid_email(email):
                 break
             else:
-                self.status_message = f"\n\nError: Invalid Input!\n"
-        
+                self.status_message = "\n\nError: Invalid Input!\n"
+                
         while True:
             self.clear_and_header("Create a New GP")
             print("\nAssigned Clinic:")

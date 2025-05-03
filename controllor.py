@@ -67,24 +67,6 @@ class MPMS:
             raise ValueError("Incorrect password")
 
         return self.administrator
-    
-    def create_gp(self, first_name, last_name, email, clinics, specialisation,
-                days_off):
-        try:
-            new_gp = GP(
-                gp_id=None,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                clinics=clinics,
-                specialisation=specialisation,
-                days_off=days_off,
-            )
-        except Exception as e:
-            raise ValueError(f"Failed to Greate gp: {e}")
-        
-        self.gps[new_gp.gp_id] = new_gp
-        self.save_data('G')
 
     def create_clinic(self, clinic_name, clinic_suburb, clinic_services,
                     clinic_openning_hours):
@@ -115,6 +97,46 @@ class MPMS:
             self.save_data('C')
         except Exception as e:
             raise ValueError(f"Failed to update clinic: {e}")
+
+    def create_gp(self, first_name, last_name, email, clinics, specialisation,
+                days_off):
+        try:
+            new_gp = GP(
+                gp_id=None,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                clinics=clinics,
+                specialisation=specialisation,
+                days_off=days_off,
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to Greate gp: {e}")
+        
+        self.gps[new_gp.gp_id] = new_gp
+        self.save_data('G')
+
+    def delete_gp(self, gp_id):
+        try:
+            del self.gps[gp_id]
+            self.save_data('G')
+        except Exception as e:
+            raise ValueError(f"Failed to update gp: {e}")
+                   
+    def update_gp(self, gp):
+        try:
+            self.gps[gp.gp_id] = gp
+            self.save_data('G')
+        except Exception as e:
+            raise ValueError(f"Failed to update clinic: {e}")
+    
+
+
+
+
+
+
+
 
     def save_data(self, code):
         if code == 'P' or code == 'A':
