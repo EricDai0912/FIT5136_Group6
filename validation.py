@@ -7,6 +7,10 @@ class Validation:
         return email.endswith("@student.monash.edu") or email.endswith("@staff.monash.edu")
     
     @staticmethod
+    def is_gp_valid_email(email: str) -> bool:
+        return "@" in email and "." in email
+    
+    @staticmethod
     def is_valid_password(password: str):
 
         if len(password) < 8:
