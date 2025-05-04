@@ -22,7 +22,7 @@ class Display:
             print(self.status_message)
             self.status_message = ""
 
-    def print_list_table(self, data):
+    def print_table(self, data):
         if not data:
             print("No Record Found.")
             return
@@ -116,7 +116,7 @@ class Display:
         while True:
             self.clear_and_header("Update or Delete Clinic Info")
             print("\nList of all clinics:\n")
-            self.print_list_table(self.mpms.clinics)
+            self.print_table(self.mpms.clinics)
             print("\n0: Exit")
             choice = input("\nPlease enter an option to update or delete: ").strip()
             if choice == '0':
@@ -137,7 +137,7 @@ class Display:
         while True:
             self.clear_and_header("Update or Delete GP Info")
             print("\nList of all GP:\n")
-            self.print_list_table(self.mpms.gps)
+            self.print_table(self.mpms.gps)
             print("\n0:Exit")
             choice = input("\nPlease enter an option to update or delete: ").strip()
             if choice == '0':
