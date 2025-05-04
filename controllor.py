@@ -11,7 +11,6 @@ class MPMS:
         self.gps = FileIO.read_gps_csv()
         self.clinics = FileIO.read_clinics_csv()
         self.administrator = Administrator()
-        self.file_handler = FileIO()
 
     def is_patient_exist(self, email):
         return email in self.patients
@@ -102,11 +101,25 @@ class MPMS:
         
         self.clinics[new_clinic.clinic_id] = new_clinic
         self.save_data('C')
+    
+    def delete_clinic(self, clinic_id):
+        try:
+            del self.clinics[clinic_id]
+            self.save_data('C')
+        except Exception as e:
+            raise ValueError(f"Failed to delete clinic: {e}")
+    
+    def update_clinic(self, clinic):
+        try:
+            self.clinics[clinic.clinic_id] = clinic
+            self.save_data('C')
+        except Exception as e:
+            raise ValueError(f"Failed to update clinic: {e}")
 
     def save_data(self, code):
         if code == 'P' or code == 'A':
-            self.file_handler.write_patients_csv(self.patients)
+            FileIO.write_patients_csv(self.patients)
         if code == 'G' or code == 'A':
-            self.file_handler.write_gps_csv(self.gps)
+            FileIO.write_gps_csv(self.gps)
         if code == 'C' or code == 'A':
-            self.file_handler.write_clinics_csv(self.clinics)
+            FileIO.write_clinics_csv(self.clinics)

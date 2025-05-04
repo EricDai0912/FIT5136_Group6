@@ -49,33 +49,108 @@ class Display:
             print(inline.format(*values))
         print(outline)
     
-    def admin_update_delete_clinic(self):
+    def admin_update_delete_clinic(self, idx):
+        clinic = list(self.mpms.clinics.values())[idx - 1]
+        while True:
+            self.clear_and_header("Clinic Details")
+            print(f"\n1: Clinic Name: {clinic.clinic_name}")
+            print(f"\n2: Clinic Suburb: {clinic.clinic_suburb}")
+            print(f"\n3: Clinic Available Services: {clinic.clinic_services}")
+            print(f"\n4: Clinic Opearating Hours: {clinic.clinic_openning_hours}")
+            print("\n5: Delete")
+            print("\n0: Save&Exit")
+            choice = input("\nPlease enter an option to update or delete: ").strip()
+            if choice == '1':
+                while True:
+                    self.clear_and_header("Update Clinic Name")
+                    print("\nClinic Name:")
+                    clinic_name = input("> ").strip()
+                    if not Validation.is_empty(clinic_name):
+                        clinic.clinic_name = clinic_name
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '2':
+                while True:
+                    self.clear_and_header("Update Clinic Suburb")
+                    print("\nClinic Suburb:")
+                    clinic_suburb = input("> ").strip()
+                    if not Validation.is_empty(clinic_suburb):
+                        clinic.clinic_suburb = clinic_suburb
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '3':
+                while True:
+                    self.clear_and_header("Update Clinic Available Services")
+                    print("\nClinic Available Services:")
+                    clinic_services = input("> ").strip()
+                    if not Validation.is_empty(clinic_services):
+                        clinic.clinic_services = clinic_services
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '4':
+               while True:
+                    self.clear_and_header("Update Clinic Opearating Hours")
+                    print("\nClinic Opearating Hours:")
+                    clinic_openning_hours = input("> ").strip()
+                    if not Validation.is_empty(clinic_openning_hours):
+                        clinic.clinic_openning_hours = clinic_openning_hours
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '5':
+                choice = input("\nAre you sure you want to delete[Y/Any key]:")
+                if choice == 'Y':
+                    self.mpms.delete_clinic(clinic.clinic_id)
+                    return
+            elif choice == '0':
+                self.mpms.update_clinic(clinic)
+                return
+            else:
+                self.status_message = "\nError: Invalid option, please try again.\n"
+
+    
+    def admin_list_clinic(self):
         while True:
             self.clear_and_header("Update or Delete Clinic Info")
             print("\nList of all clinics:\n")
-            self.print_table(self.mpms.clinics)
+            self.print_list_table(self.mpms.clinics)
             print("\n0: Exit")
             choice = input("\nPlease enter an option to update or delete: ").strip()
             if choice == '0':
                 return
+            try:
+                choice = int(choice)
+                if 1 <= choice <= len(self.mpms.clinics):
+                    self.admin_update_delete_clinic(choice)
+                    break
+                else:
+                    raise ValueError
+            except ValueError:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
+            
 
-    def admin_update_delete_gp(self):
+    def admin_list_gp(self):
         while True:
             self.clear_and_header("Update or Delete GP Info")
             print("\nList of all GP:\n")
-            self.print_table(self.mpms.gps)
+            self.print_list_table(self.mpms.gps)
             print("\n0:Exit")
             choice = input("\nPlease enter an option to update or delete: ").strip()
             if choice == '0':
                 return
+            
+            
     
     def admin_create_clinic(self):
-        validation = Validation()
         while True:
             self.clear_and_header("Create a New Clinic")
             print("\nClinic Name:")
             clinic_name = input("> ").strip()
-            if not validation.is_empty(clinic_name):
+            if not Validation.is_empty(clinic_name):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -84,7 +159,7 @@ class Display:
             self.clear_and_header("Create a New Clinic")
             print("\nClinic Suburb:")
             clinic_suburb = input("> ").strip()
-            if not validation.is_empty(clinic_suburb):
+            if not Validation.is_empty(clinic_suburb):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -93,7 +168,7 @@ class Display:
             self.clear_and_header("Create a New Clinic")
             print("\nClinic Services:")
             clinic_services = input("> ").strip()
-            if not validation.is_empty(clinic_services):
+            if not Validation.is_empty(clinic_services):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -102,7 +177,7 @@ class Display:
             self.clear_and_header("Create a New Clinic")
             print("\nClinic Openning Hours:")
             clinic_openning_hours = input("> ").strip()
-            if not validation.is_empty(clinic_openning_hours):
+            if not Validation.is_empty(clinic_openning_hours):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -118,12 +193,11 @@ class Display:
         return
 
     def admin_create_gp(self):
-        validation = Validation()
         while True:
             self.clear_and_header("Create a New GP")
             print("\nFirst Name:")
             first_name = input("> ").strip()
-            if not validation.is_empty(first_name):
+            if not Validation.is_empty(first_name):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -132,7 +206,7 @@ class Display:
             self.clear_and_header("Create a New GP")
             print("\nLast Name:")
             last_name = input("> ").strip()
-            if not validation.is_empty(last_name):
+            if not Validation.is_empty(last_name):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -141,7 +215,7 @@ class Display:
             self.clear_and_header("Create a New GP")
             print("\nEmail:")
             email = input("> ").strip()
-            if not validation.is_empty(email):
+            if not Validation.is_empty(email):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -150,7 +224,7 @@ class Display:
             self.clear_and_header("Create a New GP")
             print("\nAssigned Clinic:")
             clinics = input("> ").strip()
-            if not validation.is_empty(clinics):
+            if not Validation.is_empty(clinics):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -159,7 +233,7 @@ class Display:
             self.clear_and_header("Create a New GP")
             print("\nSpeciallisation:")
             specialisation = input("> ").strip()
-            if not validation.is_empty(specialisation):
+            if not Validation.is_empty(specialisation):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -168,7 +242,7 @@ class Display:
             self.clear_and_header("Create a New GP")
             print("\nAvailability:")
             days_off = input("> ").strip()
-            if not validation.is_empty(days_off):
+            if not Validation.is_empty(days_off):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -185,13 +259,12 @@ class Display:
         
 
     def patient_register(self):
-        validation = Validation()
         while True:
             self.clear_and_header("Patient Register")
             print("\nEmail Monash student email or staff email:")
             print("   *Email Monash student email or staff email")
             email = input("> ").strip()
-            if validation.is_valid_email(email):
+            if Validation.is_valid_email(email):
                 if not self.mpms.is_patient_exist(email):
                     break
                 else:
@@ -206,7 +279,7 @@ class Display:
             print("   *At least one uppercase")
             print("   *At least one number")
             password = input("> ").strip()
-            error = validation.is_valid_password(password)
+            error = Validation.is_valid_password(password)
             if error == "":
                 break
             else:
@@ -216,7 +289,7 @@ class Display:
             self.clear_and_header("Patient Register")
             print("\nFirst Name:")
             first_name = input("> ").strip()
-            if not validation.is_empty(first_name):
+            if not Validation.is_empty(first_name):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -225,7 +298,7 @@ class Display:
             self.clear_and_header("Patient Register")
             print("\nLast Name:")
             last_name = input("> ").strip()
-            if not validation.is_empty(last_name):
+            if not Validation.is_empty(last_name):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -235,7 +308,7 @@ class Display:
             print("\nDate of Birth :")
             print("   *Format dd/mm/yyyy ")
             date_of_birth = input("> ").strip()
-            if validation.is_valid_dob(date_of_birth):
+            if Validation.is_valid_dob(date_of_birth):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -248,7 +321,7 @@ class Display:
             print("   *Other: O")
             print("   *Prefer not to say: N")
             gender = input("> ").strip()
-            if validation.is_valid_gender(gender):
+            if Validation.is_valid_gender(gender):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -257,7 +330,7 @@ class Display:
             self.clear_and_header("Patient Register")
             print("\nMobile Number (+61):")
             phone_number = input("> ").strip()
-            if validation.is_valid_phone(phone_number):
+            if Validation.is_valid_phone(phone_number):
                 break
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
@@ -340,7 +413,7 @@ class Display:
             if choice == '1':
                 self.admin_create_gp()
             elif choice == '2':
-                self.admin_update_delete_gp()
+                self.admin_list_gp()
             elif choice == '0':
                 return
             else:
@@ -357,7 +430,7 @@ class Display:
             if choice == '1':
                 self.admin_create_clinic()
             elif choice == '2':
-                self.admin_update_delete_clinic()
+                self.admin_list_clinic()
             elif choice == '0':
                 return
             else:
@@ -408,7 +481,7 @@ class Display:
             choice = input("\nPlease enter an option: ").strip()
 
             if choice == '1':
-                self.patient_login()
+                self.patient_register()
             elif choice == '2':
                 self.patient_login()
             elif choice == '3':
