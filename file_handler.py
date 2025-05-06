@@ -1,4 +1,4 @@
-import csv
+import csv, json
 from patient import Patient
 from gp import GP
 from clinic import Clinic
@@ -52,7 +52,9 @@ class FileIO:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for gp in gps_list:
-                writer.writerow(gp.to_dict())
+                row = gp.to_dict()
+                row['clinics'] = json.dumps(gp.clinics, ensure_ascii=False)
+                writer.writerow(row)
     
     @staticmethod
     def read_patients_csv():
@@ -88,7 +90,7 @@ class FileIO:
                         first_name     = row['first_name'],
                         last_name      = row['last_name'],
                         email          = row['email'],
-                        clinics        = row['clinics'],
+                        clinics        = json.loads(row.get('clinics', '[]')),
                         specialisation = row['specialisation'],
                         days_off       = row['days_off'],
                     )

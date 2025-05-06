@@ -1,4 +1,5 @@
 import os
+import copy
 from controllor import MPMS
 from validation import Validation
 
@@ -137,7 +138,11 @@ class Display:
         while True:
             self.clear_and_header("Update or Delete GP Info")
             print("\nList of all GP:\n")
-            self.print_table(self.mpms.gps)
+            gps_copy = copy.deepcopy(self.mpms.gps)
+            for gp in gps_copy.values():
+                for i in range(len(gp.clinics)):
+                    gp.clinics[i] = self.mpms.clinics[gp.clinics[i]].clinic_name
+            self.print_table(gps_copy)
             print("\n0:Exit")
             choice = input("\nPlease enter an option to update or delete: ").strip()
             if choice == '0':
@@ -313,15 +318,33 @@ class Display:
                 break
             else:
                 self.status_message = "\n\nError: Invalid Input!\n"
-                
+
+        assigned_clinics = []   
         while True:
             self.clear_and_header("Create a New GP")
-            print("\nAssigned Clinic:")
-            clinics = input("> ").strip()
-            if not Validation.is_empty(clinics):
+            print("\nList of all clinics:\n")
+            self.print_table(self.mpms.clinics)
+            print("\n0: Done")
+            print(f"\nAssigned Clinic: {[c.clinic_name for c in assigned_clinics]}")
+            print("   *Please select one clinic at a time")
+            choice = input("> ").strip()
+            if choice == '0':
+                clinics = [c.clinic_id for c in assigned_clinics]
                 break
-            else:
+            try:
+                idx = int(choice)
+                if 1 <= idx <= len(self.mpms.clinics):
+                    clinic = list(self.mpms.clinics.values())[idx - 1]
+                    if not clinic in assigned_clinics:
+                        assigned_clinics.append(clinic)
+                    else:
+                        self.status_message = f"\n\nError: This clinic has already assigned!\n"
+                    continue
+                else:
+                    raise ValueError
+            except ValueError:
                 self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
         
         while True:
             self.clear_and_header("Create a New GP")

@@ -1,4 +1,4 @@
 gp_id,first_name,last_name,email,clinics,specialisation,days_off
-da5672f9-9d81-49f2-83e3-75126d9c02d3,gp1,gp1,gp1@163.com,None,None,None
-5b58b450-ee25-4373-9964-84e6485dd173,donk,donk,donk.cs@163.com,NA,haha,sds
-10440bba-9224-4b31-a39c-1b747dc29e6c,niko,asda,asasdasd@student.monash.edu,asdas,asda,asd
+d8a69889-c877-4066-9428-d46e2b365833,gp1,gp1,gp1@163.com,[],NA,NA
+ffc9ba38-edb7-4244-bcb3-cf05f79447d5,gp2,gp2,gp2@163.com,"[""d01d5d34-d457-4e92-aa8f-b8ab927db3c2""]",NA,NA
+579e8ff2-ad48-4fe2-98f4-d5f3ca93f2fb,gp3,gp3,gp3@163.com,"[""d01d5d34-d457-4e92-aa8f-b8ab927db3c2"", ""08f9dc86-a7a7-4b20-a3a0-eb69789dc520""]",NA,NA
