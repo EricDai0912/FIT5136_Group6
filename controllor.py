@@ -1,8 +1,10 @@
+import copy
 from patient import Patient
 from administrator import Administrator
 from file_handler import FileIO
 from gp import GP
 from clinic import Clinic
+from appointment import Appointment
 
 class MPMS:
 
@@ -10,7 +12,24 @@ class MPMS:
         self.patients = FileIO.read_patients_csv()
         self.gps = FileIO.read_gps_csv()
         self.clinics = FileIO.read_clinics_csv()
+        self.appointments = FileIO.read_appointments_csv()
         self.administrator = Administrator()
+    
+    def get_gps_by_clinic_id(self, cid):
+        matched_gps = {gp.gp_id:gp for gp in self.gps.values() if cid in gp.clinics}
+        return matched_gps
+
+    def get_clinics_by_clinic_suburb(self, suburb):
+        matched_clinics = {cid:clinic for cid, clinic in self.clinics.items() if clinic.clinic_suburb == suburb}
+        return matched_clinics
+    
+    def get_gps_with_clinic_name(self):
+        gps_copy = copy.deepcopy(self.gps)
+        for gp in gps_copy.values():
+            for i in range(len(gp.clinics)):
+                gp.clinics[i] = self.clinics[gp.clinics[i]].clinic_name
+
+        return gps_copy
 
     def is_patient_exist(self, email):
         return email in self.patients
@@ -144,6 +163,25 @@ class MPMS:
         except Exception as e:
             raise ValueError(f"Failed to update clinic: {e}")
     
+    def create_appointment(self, gp_id, clinic_id, date, time, duration):
+        try:
+            new_appointment = Appointment(
+                appointment_id=None,
+                gp_id=gp_id,
+                clinic_id=clinic_id,
+                clinic_name=self.clinics[clinic_id].clinic_name,
+                gp_name=f"{self.gps[gp_id].first_name} {self.gps[gp_id].last_name}",
+                clinic_suburb=self.clinics[clinic_id].clinic_suburb,
+                date=date,
+                time=time,
+                duration=duration
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to Greate appointment: {e}")
+        
+        self.appointments[new_appointment.appointment_id] = new_appointment
+        self.save_data('AP')
+    
     def save_data(self, code):
         if code == 'P' or code == 'A':
             FileIO.write_patients_csv(self.patients)
@@ -151,3 +189,5 @@ class MPMS:
             FileIO.write_gps_csv(self.gps)
         if code == 'C' or code == 'A':
             FileIO.write_clinics_csv(self.clinics)
+        if code == 'AP' or code == 'A':
+            FileIO.write_appointments_csv(self.appointments)

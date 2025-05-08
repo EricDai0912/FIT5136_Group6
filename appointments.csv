@@ -1,0 +1,2 @@
+appointment_id,gp_id,clinic_id,clinic_name,gp_name,clinic_suburb,date,time,duration,availability,reason
+a3e2247d-b916-4283-a11c-702035b8bf2f,8a5f1a73-0e02-4ef0-99df-6b05aa7f166b,ea5e9c82-4ee9-4b3a-b330-c50966bd5d18,clinic1,Eric Dai,Boxhill,31/05/2025,13:00,60,True,

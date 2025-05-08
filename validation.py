@@ -1,4 +1,5 @@
 import re
+import datetime
 
 class Validation:
 
@@ -37,7 +38,7 @@ class Validation:
             return False
     
     @staticmethod
-    def is_valid_dob(dob: str):
+    def is_valid_date(dob: str):
         pattern = r'^\d{2}/\d{2}/\d{4}$'
         if not re.match(pattern, dob):
             return False
@@ -54,6 +55,14 @@ class Validation:
         return True
 
     @staticmethod
+    def is_valid_time(time_str):
+        try:
+            datetime.time.fromisoformat(time_str)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
     def is_valid_phone(phone: str):
-        pattern = r'^04\d{8}$'
+        pattern = r'^4\d{8}$'
         return re.match(pattern, phone) is not None
