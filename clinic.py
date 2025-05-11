@@ -21,3 +21,11 @@ class Clinic:
             'clinic_services': self.clinic_services,
             'clinic_openning_hours': self.clinic_openning_hours,
         }
+    
+    def to_print_dict(self):
+        return {
+            'clinic_name': self.clinic_name,
+            'clinic_suburb': self.clinic_suburb,
+            'clinic_services': self.clinic_services,
+            'clinic_openning_hours': self.clinic_openning_hours,
+        }

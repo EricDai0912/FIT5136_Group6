@@ -40,3 +40,15 @@ class Appointment:
             'availability':    self.availability,
             'reason':          self.reason
         }
+    
+    def to_print_dict(self):
+        return {
+            'clinic_name':     self.clinic_name,
+            'gp_name':         self.gp_name,
+            'clinic_suburb':   self.clinic_suburb,
+            'date':            self.date,       # "dd/mm/yyyy"
+            'time':            self.time, # "HH:MM"
+            'duration':        self.duration,
+            'availability':    self.availability,
+            'reason':          self.reason
+        }

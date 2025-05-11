@@ -15,21 +15,17 @@ class MPMS:
         self.appointments = FileIO.read_appointments_csv()
         self.administrator = Administrator()
     
+    def get_appointments_by_gp_id(self, gp_id):
+        matched_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.gp_id == gp_id}
+        return matched_appointments
+    
     def get_gps_by_clinic_id(self, cid):
-        matched_gps = {gp.gp_id:gp for gp in self.gps.values() if cid in gp.clinics}
+        matched_gps = {gp.gp_id:gp for gp in self.gps.values() if cid in gp.clinic_ids}
         return matched_gps
 
     def get_clinics_by_clinic_suburb(self, suburb):
         matched_clinics = {cid:clinic for cid, clinic in self.clinics.items() if clinic.clinic_suburb == suburb}
         return matched_clinics
-    
-    def get_gps_with_clinic_name(self):
-        gps_copy = copy.deepcopy(self.gps)
-        for gp in gps_copy.values():
-            for i in range(len(gp.clinics)):
-                gp.clinics[i] = self.clinics[gp.clinics[i]].clinic_name
-
-        return gps_copy
 
     def is_patient_exist(self, email):
         return email in self.patients
@@ -117,7 +113,7 @@ class MPMS:
         except Exception as e:
             raise ValueError(f"Failed to update clinic: {e}")
 
-    def create_gp(self, first_name, last_name, email, clinics, specialisation,
+    def create_gp(self, first_name, last_name, email, clinic_ids, clinic_names, specialisation,
                 days_off):
         try:
             new_gp = GP(
@@ -125,7 +121,8 @@ class MPMS:
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
-                clinics=clinics,
+                clinic_ids=clinic_ids,
+                clinic_names=clinic_names,
                 specialisation=specialisation,
                 days_off=days_off,
             )
@@ -163,7 +160,7 @@ class MPMS:
         except Exception as e:
             raise ValueError(f"Failed to update clinic: {e}")
     
-    def create_appointment(self, gp_id, clinic_id, date, time, duration):
+    def create_appointment(self, gp_id, clinic_id, date, time, duration, reason):
         try:
             new_appointment = Appointment(
                 appointment_id=None,
@@ -174,7 +171,8 @@ class MPMS:
                 clinic_suburb=self.clinics[clinic_id].clinic_suburb,
                 date=date,
                 time=time,
-                duration=duration
+                duration=duration,
+                reason=reason
             )
         except Exception as e:
             raise ValueError(f"Failed to Greate appointment: {e}")

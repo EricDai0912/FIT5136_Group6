@@ -55,7 +55,8 @@ class FileIO:
             writer.writeheader()
             for gp in gps_list:
                 row = gp.to_dict()
-                row['clinics'] = json.dumps(gp.clinics, ensure_ascii=False)
+                row['clinic_ids'] = json.dumps(gp.clinic_ids, ensure_ascii=False)
+                row['clinic_names'] = json.dumps(gp.clinic_names, ensure_ascii=False)
                 writer.writerow(row)
     
     @staticmethod
@@ -112,7 +113,8 @@ class FileIO:
                         first_name     = row['first_name'],
                         last_name      = row['last_name'],
                         email          = row['email'],
-                        clinics        = json.loads(row.get('clinics', '[]')),
+                        clinic_ids     = json.loads(row.get('clinic_ids', '[]')),
+                        clinic_names   = json.loads(row.get('clinic_names', '[]')),
                         specialisation = row['specialisation'],
                         days_off       = row['days_off'],
                     )

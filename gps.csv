@@ -1,3 +1,3 @@
-gp_id,first_name,last_name,email,clinics,specialisation,days_off
-8a5f1a73-0e02-4ef0-99df-6b05aa7f166b,Eric,Dai,eric@163.com,"[""ea5e9c82-4ee9-4b3a-b330-c50966bd5d18""]",NA,NA
-7eda342c-e55e-40ea-89d6-72eb693300ff,Ryan,Zhang,ryan@163.com,"[""63b01590-5b91-4027-9b2f-67f7a050432e""]",NA,nA
+gp_id,first_name,last_name,email,clinic_ids,clinic_names,specialisation,days_off
+c54650ba-e16a-496b-95aa-2865e9ba406c,gp1,gp1,gp1@163.com,"[""ea5e9c82-4ee9-4b3a-b330-c50966bd5d18""]","[""clinic1""]",NA,NA
+de7e4b88-eeab-4582-b174-2eb7c0381e64,gp2,gp2,gp2@163.com,"[""63b01590-5b91-4027-9b2f-67f7a050432e""]","[""clinic2""]",NA,NA

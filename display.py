@@ -28,7 +28,7 @@ class Display:
             return
         
         data_list = list(data.values())
-        rows = [obj.to_dict() for obj in data_list]
+        rows = [obj.to_print_dict() for obj in data_list]
         headers = ["Option"] + list(rows[0].keys())
 
         widths = {key: len(key) for key in headers}
@@ -137,8 +137,7 @@ class Display:
         while True:
             self.clear_and_header("Update or Delete GP Info")
             print("\nList of all GP:\n")
-            gps_by_clinics_name = self.mpms.get_gps_with_clinic_name()
-            self.print_table(gps_by_clinics_name)
+            self.print_table(self.mpms.gps)
             print("\n0:Exit")
             choice = input("\nPlease enter an option to update or delete: ").strip()
             if choice == '0':
@@ -275,9 +274,19 @@ class Display:
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
         
+        while True:
+            self.clear_and_header("Create a New Appointment")
+            print("\nReason For Visit :")
+            print("   * General Consultation, Specialist Referral,Vaccination, etc")
+            reason = input("> ").strip()
+            if not Validation.is_empty(reason):
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        
         try:
             self.mpms.create_appointment(
-                gid, cid, date, time, duration
+                gid, cid, date, time, duration, reason
             )
         except ValueError as e:
             self.status_message = f"\nCreate Appointment failed: {e}\n"
@@ -371,7 +380,8 @@ class Display:
             print("   *Please select one clinic at a time")
             choice = input("> ").strip()
             if choice == '0':
-                clinics = [c.clinic_id for c in assigned_clinics]
+                clinic_ids = [c.clinic_id for c in assigned_clinics]
+                clinic_names = [c.clinic_name for c in assigned_clinics]
                 break
             try:
                 idx = int(choice)
@@ -408,7 +418,7 @@ class Display:
         
         try:
             self.mpms.create_gp(
-                first_name, last_name, email, clinics, specialisation,
+                first_name, last_name, email, clinic_ids, clinic_names, specialisation,
                 days_off
             )
         except ValueError as e:
@@ -598,6 +608,7 @@ class Display:
     def admin_appointment_management_per_gp(self, gid, cid):
         while True:
             self.clear_and_header(f"DR.{self.mpms.gps[gid].first_name}")
+            self.print_table(self.mpms.appointments)
             print("n: set a new appointment")
             print("0: Exit")
             choice = input("\nPlease enter an option or choose one to update: ").strip()
