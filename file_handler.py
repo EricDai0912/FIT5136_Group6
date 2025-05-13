@@ -94,7 +94,9 @@ class FileIO:
                         date_of_birth= row['date_of_birth'],
                         gender       = row['gender'],
                         phone_number = row['phone_number'],
-                        address      = row['address']
+                        address      = row['address'],
+                        notification = row['notification'],
+                        last_booking_date = row['last_booking_date']
                     )
                     patients[p.email] = p
         except FileNotFoundError:
@@ -132,6 +134,8 @@ class FileIO:
                 for row in reader:
                     appointment = Appointment(
                         appointment_id = row.get('appointment_id'),
+                        patient_email     = row.get('patient_email'),
+                        patient_name   = row.get('patient_name'),
                         gp_id          = row.get('gp_id'),
                         clinic_id      = row.get('clinic_id'),
                         clinic_name    = row.get('clinic_name'),
@@ -139,8 +143,8 @@ class FileIO:
                         clinic_suburb  = row.get('clinic_suburb'),
                         date           = datetime.datetime.strptime(row['date'], "%d/%m/%Y").date(),
                         time           = datetime.datetime.strptime(row['time'], "%H:%M").time(),
-                        duration       = row.get('duration'),
-                        availability   = row.get('availability'),
+                        duration       = int(row.get('duration')),
+                        availability   = True if row.get('availability') == 'True' else False,
                         reason         = row.get('reason')
                     )
                     appointments[appointment.appointment_id] = appointment

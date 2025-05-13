@@ -1,2 +1,4 @@
-appointment_id,gp_id,clinic_id,clinic_name,gp_name,clinic_suburb,date,time,duration,availability,reason
-64d89115-eac9-4414-b657-7af1c2b26540,c54650ba-e16a-496b-95aa-2865e9ba406c,ea5e9c82-4ee9-4b3a-b330-c50966bd5d18,clinic1,gp1 gp1,Boxhill,31/05/2026,13:00,40,True,General Consultation
+appointment_id,patient_email,patient_name,gp_id,clinic_id,clinic_name,gp_name,clinic_suburb,date,time,duration,availability,reason
+37d39f81-1e7b-4bcb-b201-740cbe8b14d4,patient1@student.monash.edu,patient1 patieng1,c54650ba-e16a-496b-95aa-2865e9ba406c,ea5e9c82-4ee9-4b3a-b330-c50966bd5d18,clinic1,gp1 gp1,Boxhill,31/05/2025,13:00,40,False,General Consultation
+ddc5683d-c53c-445d-bd32-0dd4d2abee93,,,de7e4b88-eeab-4582-b174-2eb7c0381e64,ea5e9c82-4ee9-4b3a-b330-c50966bd5d18,clinic1,gp2 gp2,Boxhill,30/05/2025,12:00,15,True,General Consultation
+2bbbe4b8-94cb-4d4e-a45e-1f4dcadf2200,,,de7e4b88-eeab-4582-b174-2eb7c0381e64,63b01590-5b91-4027-9b2f-67f7a050432e,clinic2,gp2 gp2,Clayton,02/06/2025,14:00,15,True,Vaccination

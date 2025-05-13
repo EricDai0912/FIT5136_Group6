@@ -153,6 +153,72 @@ class Display:
                 self.status_message = f"\n\nError: Invalid Input!\n"
                 continue
 
+    def admin_update_delete_appointment(self, idx):
+        appointment = list(self.mpms.appointments.values())[idx-1]
+        while True:
+            self.clear_and_header("Appointment Details")
+            print(f"\n1: Appointment Date: {appointment.date}")
+            print(f"\n2: Appointment Time: {appointment.time}")
+            print(f"\n3: Appointment Duration: {appointment.duration}")
+            print(f"\n4: Appointment Reason: {appointment.reason}")
+            print("\n5: Release")
+            print("\n6: Delete")
+            print("\n0: Save&Exit")
+            choice = input("\nPlease enter an option to update or delete: ").strip()
+            if choice == '1':
+                while True:
+                    self.clear_and_header("Update Appointment Date")
+                    print("\nAppointment Date:")
+                    date = input("> ").strip()
+                    if Validation.is_valid_date(date):
+                        appointment.date = date
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '2':
+                while True:
+                    self.clear_and_header("Update Appointment Time")
+                    print("\nAppointment Time:")
+                    time = input("> ").strip()
+                    if Validation.is_valid_time(time):
+                        appointment.time = time
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '3':
+                while True:
+                    self.clear_and_header("Update Appointment Duration")
+                    print("\nAppointment Duration:")
+                    duration = input("> ").strip()
+                    if duration in ['15', '25', '40', '60']:
+                        appointment.duration = int(duration)
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '4':
+                while True:
+                    self.clear_and_header("Update Appointment Reason")
+                    print("\nAppointment Reason:")
+                    reason = input("> ").strip()
+                    if not Validation.is_empty(reason):
+                        appointment.reason = reason
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+            elif choice == '5':
+                choice = input("\nAre you sure you want to release[Y/Any key]:")
+                if choice == 'Y':
+                    self.mpms.release_appointment(appointment.appointment_id)
+            elif choice == '6':
+                choice = input("\nAre you sure you want to delete[Y/Any key]:")
+                if choice == 'Y':
+                    self.mpms.delete_appointment(appointment.appointment_id)
+                    return
+            elif choice == '0':
+                self.mpms.update_appointment(appointment)
+                return
+            else:
+                self.status_message = "\nError: Invalid option, please try again.\n"
 
     def admin_update_delete_gp(self, idx):
         gp = list(self.mpms.gps.values())[idx-1]
@@ -161,7 +227,7 @@ class Display:
             print(f"\n1: GP First Name: {gp.first_name}")
             print(f"\n2: GP Last Name: {gp.last_name}")
             print(f"\n3: GP Email: {gp.email}")
-            print(f"\n4: GP Clinics: {gp.clinics}")
+            print(f"\n4: GP Clinics: {gp.clinic_names}")
             print(f"\n5: GP Specialisation: {gp.specialisation}")
             print(f"\n6: GP Days_off: {gp.days_off}")
             print("\n7: Delete")
@@ -199,15 +265,33 @@ class Display:
                     else:
                         self.status_message = f"\n\nError: Invalid Input!\n"   
             elif choice == '4':
+                assigned_clinics = []
                 while True:
-                    self.clear_and_header("Update GP Clinics")
-                    print("\nGP Last Name:")
-                    clinics = input("> ").strip()
-                    if not Validation.is_empty(clinics):
-                        gp.clinics = clinics
+                    self.clear_and_header("Reassign GP Clinics")
+                    print("\nList of all clinics:\n")
+                    self.print_table(self.mpms.clinics)
+                    print("\n0: Done")
+                    print(f"\nAssigned Clinic: {[c.clinic_name for c in assigned_clinics]}")
+                    print("   *Please select one clinic at a time")
+                    choice = input("> ").strip()
+                    if choice == '0':
+                        gp.clinic_ids = [c.clinic_id for c in assigned_clinics]
+                        gp.clinic_names = [c.clinic_name for c in assigned_clinics]
                         break
-                    else:
-                        self.status_message = f"\n\nError: Invalid Input!\n"               
+                    try:
+                        idx = int(choice)
+                        if 1 <= idx <= len(self.mpms.clinics):
+                            clinic = list(self.mpms.clinics.values())[idx - 1]
+                            if not clinic in assigned_clinics:
+                                assigned_clinics.append(clinic)
+                            else:
+                                self.status_message = f"\n\nError: This clinic has already assigned!\n"
+                            continue
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+                        continue         
             elif choice == '5':
                 while True:
                     self.clear_and_header("Update GP Specialisation")
@@ -241,39 +325,42 @@ class Display:
 
     def admin_create_appointment(self, gid, cid):    
         while True:
-            self.clear_and_header("Patient Register")
+            self.clear_and_header("Create a New Appointment")
             print("\nDate :")
             print("   *Format dd/mm/yyyy ")
             date = input("> ").strip()
             if Validation.is_valid_date(date):
                 date = datetime.datetime.strptime(date, "%d/%m/%Y").date()
-                break
+                self.clear_and_header("Create a New Appointment")
+                print("\nTime :")
+                print("   *Format HH:MM (24h) ")
+                time = input("> ").strip()
+                if Validation.is_valid_time(time):
+                    time = datetime.datetime.strptime(time, "%H:%M").time()
+                    self.clear_and_header("Create a New Appointment")
+                    print("\nDuration :")
+                    print("   * 15/25/40/60 mins")
+                    print("   * Only enter the number")
+                    duration = input("> ").strip()
+                    if duration in ['15', '25', '40', '60']:
+                        duration = int(duration)
+                        start_dt = datetime.datetime.combine(date, time)
+                        end_dt = start_dt + datetime.timedelta(minutes=duration)
+                        print(gid, cid, start_dt, end_dt)
+                        if not self.mpms.check_appointment_conflict(
+                            gid, start_dt, end_dt
+                            ):
+                            input()
+                            break
+                        else:
+                            self.status_message = f"\n\nError: Appointment Conflict!\n"
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+                else:
+                    self.status_message = f"\n\nError: Invalid Input!\n"
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
-        
-        while True:
-            self.clear_and_header("Create a New Appointment")
-            print("\nTime :")
-            print("   *Format HH:MM (24h) ")
-            time = input("> ").strip()
-            if Validation.is_valid_time(time):
-                time = datetime.datetime.strptime(time, "%H:%M").time()
-                break
-            else:
-                self.status_message = f"\n\nError: Invalid Input!\n"
-        
-        while True:
-            self.clear_and_header("Create a New Appointment")
-            print("\nDuration :")
-            print("   * 15/25/40/60 mins")
-            print("   * Only enter the number")
-            duration = input("> ").strip()
-            if duration in ['15', '25', '40', '60']:
-                duration = int(duration)
-                break
-            else:
-                self.status_message = f"\n\nError: Invalid Input!\n"
-        
+
         while True:
             self.clear_and_header("Create a New Appointment")
             print("\nReason For Visit :")
@@ -292,8 +379,6 @@ class Display:
             self.status_message = f"\nCreate Appointment failed: {e}\n"
             return
         return
-
-    
 
     def admin_create_clinic(self):
         while True:
@@ -426,7 +511,6 @@ class Display:
             return
         return
         
-
     def patient_register(self):
         while True:
             self.clear_and_header("Patient Register")
@@ -605,24 +689,30 @@ class Display:
             else:
                 self.status_message = "\nError: Invalid option, please try again.\n"
     
-    def admin_appointment_management_per_gp(self, gid, cid):
+    def admin_appointment_list_per_gp(self, gid, cid):
         while True:
             self.clear_and_header(f"DR.{self.mpms.gps[gid].first_name}")
-            self.print_table(self.mpms.appointments)
-            print("n: set a new appointment")
+            print("\nList of all Appointments:\n")
+            self.print_table(self.mpms.get_appointments_by_gp_id_clinic_id(gid, cid))
+            print("\nn: set a new appointment")
             print("0: Exit")
             choice = input("\nPlease enter an option or choose one to update: ").strip()
-
-            if choice == 'n':
-                self.admin_create_appointment(gid, cid)
-            elif choice == '2':
-                pass
-            elif choice == '0':
+            if choice == '0':
                 return
-            else:
-                self.status_message = "\nError: Invalid option, please try again.\n"
+            elif choice == 'n':
+                self.admin_create_appointment(gid, cid)
+                continue
+            try:
+                choice = int(choice)
+                if 1 <= choice <= len(self.mpms.appointments):
+                    self.admin_update_delete_appointment(choice)
+                else:
+                    raise ValueError
+            except ValueError:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
     
-    def admin_appointment_management_filter(self):
+    def admin_appointment_management(self):
         while True:
             self.clear_and_header("Appointment Management")
             print("\n0: Exit")
@@ -656,8 +746,7 @@ class Display:
                                 choice = int(choice)
                                 if 1 <= choice <= len(gps):
                                     gid = list(gps.values())[choice - 1].gp_id
-                                    self.admin_appointment_management_per_gp(gid, cid)
-                                    break
+                                    self.admin_appointment_list_per_gp(gid, cid)
                                 else:
                                     raise ValueError
                             except ValueError:
@@ -668,14 +757,101 @@ class Display:
                 except ValueError:
                     self.status_message = f"\n\nError: Invalid Input!\n"
                     continue
+    
+    def patient_book_appointments(self):
+        available_appointments = self.mpms.get_available_appointments()
+        while True:
+            self.clear_and_header("Available Appointments")
+            print("\nList of all available appointments:\n")
+            self.print_table(available_appointments)
+            print("\nFilter by:")
+            print(" *f1: Date")
+            print(" *f2: GP")
+            print(" *f3: Clinic Suburb")
+            print(" *f4: clear all filters")
+            print("\n0: Exit")
+            print("\nNOTE: Each Patient can only book one appointment per day")
+            choice = input("\nPlease enter an option to book: ").strip()
+            if choice == '0':
+                return
+            elif choice == 'f1':
+                while True:
+                    self.clear_and_header("Filter Appointments by Date")
+                    print("\nenter 'exit' to exit")
+                    print("\nDate:")
+                    print("   *Format dd/mm/yyyy ")
+                    date = input("> ").strip()
+                    if Validation.is_valid_date(date):
+                        available_appointments = self.mpms.get_available_appointments_by_date(
+                            datetime.datetime.strptime(date, "%d/%m/%Y").date())
+                        break
+                    elif date == 'exit':
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
+            elif choice == 'f2':
+                while True:
+                    self.clear_and_header("Filter Appointments by GP")
+                    print("\nList of all gps:\n")
+                    self.print_table(self.mpms.gps)
+                    print("\n0: Exit")
+                    choice = input("\nPlease enter an choose an gp: ").strip()
+                    if choice == '0':
+                        break
+                    try:
+                        idx = int(choice)
+                        if 1 <= idx <= len(self.mpms.gps):
+                            available_appointments = self.mpms.get_available_appointments_by_gp_id(idx)
+                            break
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
+            elif choice == 'f3':
+                while True:
+                    self.clear_and_header("Filter Appointments by Clinic Suburb")
+                    print("\nenter 'exit' to exit")
+                    print("\nClinic Suburb:")
+                    clinic_suburb = input("> ").strip()
+                    if not Validation.is_empty(clinic_suburb):
+                        available_appointments = self.mpms.get_available_appointments_by_clinic_suburb(clinic_suburb)
+                        break
+                    else:
+                        self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
+            elif choice == 'f4':
+                available_appointments = self.mpms.get_available_appointments()
+                continue
+            try:
+                choice = int(choice)
+                if 1 <= choice <= len(self.mpms.appointments):
+                    if self.mpms.check_patient_booking_access(self.current_user.email):
+                        appointment = list(self.mpms.appointments.values())[choice - 1]
+                        self.mpms.book_appointment(appointment.appointment_id, self.current_user.email)
+                        available_appointments = self.mpms.get_available_appointments()
+                    else:
+                        self.status_message = f"\n\nError: You have already booked an appointment today!\n"
+                else:
+                    raise ValueError
+            except ValueError:
+                self.status_message = f"\n\nError: Invalid Input!\n"
 
     def patient_menu(self):
         while True:
             self.clear_and_header("Patient Menu")
+            print("1: Book an Appointment")
+            print("2: Upcoming Appointments")
+            print("3: Previous Appointments")
             print("0: Logout")
             choice = input("\nPlease enter an option: ").strip()
 
             if choice == '1':
+                self.patient_book_appointments()
+            elif choice == '2':
+                pass
+            elif choice == '3':
                 pass
             elif choice == '0':
                 print("\nLogging out...")
@@ -695,7 +871,7 @@ class Display:
             if choice == '1':
                 pass
             elif choice == '3':
-                self.admin_appointment_management_filter()
+                self.admin_appointment_management()
             elif choice == '4':
                 self.admin_gp_management()
             elif choice == '5':

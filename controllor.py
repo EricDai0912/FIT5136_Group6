@@ -1,10 +1,10 @@
-import copy
 from patient import Patient
 from administrator import Administrator
 from file_handler import FileIO
 from gp import GP
 from clinic import Clinic
 from appointment import Appointment
+import datetime
 
 class MPMS:
 
@@ -15,8 +15,25 @@ class MPMS:
         self.appointments = FileIO.read_appointments_csv()
         self.administrator = Administrator()
     
-    def get_appointments_by_gp_id(self, gp_id):
-        matched_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.gp_id == gp_id}
+    def get_available_appointments_by_gp_id(self, idx):
+        gp_id = list(self.gps.values())[idx - 1].gp_id
+        available_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.availability and appointment.gp_id == gp_id}
+        return available_appointments
+
+    def get_available_appointments_by_date(self, date):
+        available_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.availability and appointment.date == date}
+        return available_appointments
+    
+    def get_available_appointments_by_clinic_suburb(self, suburb):
+        available_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.availability and appointment.clinic_suburb == suburb}
+        return available_appointments
+    
+    def get_available_appointments(self):
+        available_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.availability}
+        return available_appointments
+    
+    def get_appointments_by_gp_id_clinic_id(self, gid, cid):
+        matched_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.gp_id == gid and appointment.clinic_id == cid}
         return matched_appointments
     
     def get_gps_by_clinic_id(self, cid):
@@ -26,6 +43,23 @@ class MPMS:
     def get_clinics_by_clinic_suburb(self, suburb):
         matched_clinics = {cid:clinic for cid, clinic in self.clinics.items() if clinic.clinic_suburb == suburb}
         return matched_clinics
+    
+    def check_patient_booking_access(self, email):
+        patient = self.patients[email]
+        today = datetime.date.today()
+        if today == patient.last_booking_date:
+            return False
+        else:
+            return True
+    
+    def check_appointment_conflict(self, gp_id, new_start_dt, new_end_dt):
+        for appointment in self.appointments.values():
+            if appointment.gp_id == gp_id and appointment.date == new_start_dt.date():
+                existing_start_dt = datetime.datetime.combine(appointment.date, appointment.time)
+                existing_end_dt = existing_start_dt + datetime.timedelta(minutes=appointment.duration)
+                if new_start_dt < existing_end_dt and existing_start_dt < new_end_dt:
+                    return True
+        return False
 
     def is_patient_exist(self, email):
         return email in self.patients
@@ -179,6 +213,41 @@ class MPMS:
         
         self.appointments[new_appointment.appointment_id] = new_appointment
         self.save_data('AP')
+    
+    def delete_appointment(self, appointment_id):
+        try:
+            del self.appointments[appointment_id]
+            self.save_data('AP')
+        except Exception as e:
+            raise ValueError(f"Failed to delete appointment: {e}")
+    
+    def update_appointment(self, appointment):
+        try:
+            self.appointments[appointment.appointment_id] = appointment
+            self.save_data('AP')
+        except Exception as e:
+            raise ValueError(f"Failed to update appointment: {e}")
+    
+    def release_appointment(self, appointment_id):
+        try:
+            appointment = self.appointments[appointment_id]
+            appointment.patient_email = None
+            appointment.patient_name = ""
+            appointment.availability = True
+            self.save_data('AP')
+        except Exception as e:
+            raise ValueError(f"Failed to release appointment: {e}")
+    
+    def book_appointment(self, appointment_id, email):
+        try:
+            appointment = self.appointments[appointment_id]
+            appointment.patient_email = email
+            appointment.patient_name = f"{self.patients[email].first_name} {self.patients[email].last_name}"
+            appointment.availability = False
+            self.patients[email].last_booking_date = datetime.date.today()
+            self.save_data('AP')
+        except Exception as e:
+            raise ValueError(f"Failed to book appointment: {e}")
     
     def save_data(self, code):
         if code == 'P' or code == 'A':
