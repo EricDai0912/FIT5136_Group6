@@ -15,6 +15,16 @@ class MPMS:
         self.appointments = FileIO.read_appointments_csv()
         self.administrator = Administrator()
     
+    def get_previous_appointments(self, email):
+        today = datetime.date.today()
+        previous_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.patient_email == email and appointment.date < today}
+        return previous_appointments
+    
+    def get_upcoming_appointments(self, email):
+        today = datetime.date.today()
+        upcoming_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.patient_email == email and appointment.date >= today}
+        return upcoming_appointments
+    
     def get_available_appointments_by_gp_id(self, idx):
         gp_id = list(self.gps.values())[idx - 1].gp_id
         available_appointments = {appointment_id:appointment for appointment_id, appointment in self.appointments.items() if appointment.availability and appointment.gp_id == gp_id}
@@ -227,6 +237,18 @@ class MPMS:
             self.save_data('AP')
         except Exception as e:
             raise ValueError(f"Failed to update appointment: {e}")
+    
+    def cancel_appointment(self, appointment_id, email):
+        try:
+            appointment = self.appointments[appointment_id]
+            appointment.patient_email = None
+            appointment.patient_name = ""
+            appointment.availability = True
+            if self.patients[email].last_booking_date == datetime.date.today():
+                self.patients[email].last_booking_date = None
+            self.save_data('AP')
+        except Exception as e:
+            raise ValueError(f"Failed to cancel appointment: {e}")
     
     def release_appointment(self, appointment_id):
         try:

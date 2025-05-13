@@ -153,8 +153,8 @@ class Display:
                 self.status_message = f"\n\nError: Invalid Input!\n"
                 continue
 
-    def admin_update_delete_appointment(self, idx):
-        appointment = list(self.mpms.appointments.values())[idx-1]
+    def admin_update_delete_appointment(self, idx, appointments):
+        appointment = list(appointments.values())[idx-1]
         while True:
             self.clear_and_header("Appointment Details")
             print(f"\n1: Appointment Date: {appointment.date}")
@@ -346,11 +346,9 @@ class Display:
                         duration = int(duration)
                         start_dt = datetime.datetime.combine(date, time)
                         end_dt = start_dt + datetime.timedelta(minutes=duration)
-                        print(gid, cid, start_dt, end_dt)
                         if not self.mpms.check_appointment_conflict(
                             gid, start_dt, end_dt
                             ):
-                            input()
                             break
                         else:
                             self.status_message = f"\n\nError: Appointment Conflict!\n"
@@ -609,6 +607,14 @@ class Display:
         input("\n\n\nPress Enter to return to main menu.\n")
         return
 
+    def patient_booking_success(self, name, appointment_id):
+        self.clear_and_header("Registration Successful")
+        print("\n\n" + f"Hello {name}, you have booked successfully!".center(Display.PAGE_WIDTH))
+        print("\n\nHere is your appointment details:")
+        self.print_table({appointment_id: self.mpms.appointments[appointment_id]})
+        input("\n\n\nPress Enter to return.\n")
+        return
+
     def patient_login(self):
         while True:
             self.clear_and_header("Patient Login")
@@ -690,10 +696,11 @@ class Display:
                 self.status_message = "\nError: Invalid option, please try again.\n"
     
     def admin_appointment_list_per_gp(self, gid, cid):
+        appointments = self.mpms.get_appointments_by_gp_id_clinic_id(gid, cid)
         while True:
             self.clear_and_header(f"DR.{self.mpms.gps[gid].first_name}")
             print("\nList of all Appointments:\n")
-            self.print_table(self.mpms.get_appointments_by_gp_id_clinic_id(gid, cid))
+            self.print_table(appointments)
             print("\nn: set a new appointment")
             print("0: Exit")
             choice = input("\nPlease enter an option or choose one to update: ").strip()
@@ -705,7 +712,7 @@ class Display:
             try:
                 choice = int(choice)
                 if 1 <= choice <= len(self.mpms.appointments):
-                    self.admin_update_delete_appointment(choice)
+                    self.admin_update_delete_appointment(choice, appointments)
                 else:
                     raise ValueError
             except ValueError:
@@ -757,6 +764,42 @@ class Display:
                 except ValueError:
                     self.status_message = f"\n\nError: Invalid Input!\n"
                     continue
+    
+    def patient_previous_appointments(self):
+        appointments = self.mpms.get_previous_appointments(self.current_user.email)
+        while True:
+            self.clear_and_header("Previous Appointments")
+            print("\nList of all previous appointments:\n")
+            self.print_table(appointments)
+            print("\n0: Exit")
+            choice = input("\nPlease enter an option: ").strip()
+            if choice == '0':
+                return
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+    
+    def patient_upcoming_appointments(self):
+        appointments = self.mpms.get_upcoming_appointments(self.current_user.email)
+        while True:
+            self.clear_and_header("Upcoming Appointments")
+            print("\nList of all upcoming appointments:\n")
+            self.print_table(appointments)
+            print("\n0: Exit")
+            choice = input("\nPlease enter an option to cancel: ").strip()
+            if choice == '0':
+                return
+            try:
+                idx = int(choice)
+                if 1 <= idx <= len(appointments):
+                    choice = input("\nAre you sure you want to Cancel[Y/Any key]:")
+                    if choice == 'Y':
+                        appointment = list(appointments.values())[idx - 1]
+                        self.mpms.cancel_appointment(appointment.appointment_id, self.current_user.email)
+                        appointments = self.mpms.get_upcoming_appointments(self.current_user.email)
+                else:
+                    raise ValueError
+            except ValueError:
+                self.status_message = f"\n\nError: Invalid Input!\n"
     
     def patient_book_appointments(self):
         available_appointments = self.mpms.get_available_appointments()
@@ -826,11 +869,12 @@ class Display:
                 continue
             try:
                 choice = int(choice)
-                if 1 <= choice <= len(self.mpms.appointments):
+                if 1 <= choice <= len(available_appointments):
                     if self.mpms.check_patient_booking_access(self.current_user.email):
-                        appointment = list(self.mpms.appointments.values())[choice - 1]
+                        appointment = list(available_appointments.values())[choice - 1]
                         self.mpms.book_appointment(appointment.appointment_id, self.current_user.email)
                         available_appointments = self.mpms.get_available_appointments()
+                        self.patient_booking_success(self.current_user.first_name, appointment.appointment_id)
                     else:
                         self.status_message = f"\n\nError: You have already booked an appointment today!\n"
                 else:
@@ -850,9 +894,9 @@ class Display:
             if choice == '1':
                 self.patient_book_appointments()
             elif choice == '2':
-                pass
+                self.patient_upcoming_appointments()
             elif choice == '3':
-                pass
+                self.patient_previous_appointments()
             elif choice == '0':
                 print("\nLogging out...")
                 return
