@@ -358,20 +358,10 @@ class Display:
                     self.status_message = f"\n\nError: Invalid Input!\n"
             else:
                 self.status_message = f"\n\nError: Invalid Input!\n"
-
-        while True:
-            self.clear_and_header("Create a New Appointment")
-            print("\nReason For Visit :")
-            print("   * General Consultation, Specialist Referral,Vaccination, etc")
-            reason = input("> ").strip()
-            if not Validation.is_empty(reason):
-                break
-            else:
-                self.status_message = f"\n\nError: Invalid Input!\n"
         
         try:
             self.mpms.create_appointment(
-                gid, cid, date, time, duration, reason
+                gid, cid, date, time, duration
             )
         except ValueError as e:
             self.status_message = f"\nCreate Appointment failed: {e}\n"
@@ -871,6 +861,15 @@ class Display:
                 choice = int(choice)
                 if 1 <= choice <= len(available_appointments):
                     if self.mpms.check_patient_booking_access(self.current_user.email):
+                        while True:
+                            self.clear_and_header("Book an Appointment")
+                            print("\nPlease enter your reason for visit:")
+                            print("   * General Consultation/Specialist Referral/Vaccination/Other")
+                            reason = input("> ").strip()
+                            if reason in ['General Consultation', 'Specialist Referral', 'Vaccination', 'Other']:
+                                break
+                            else:
+                                self.status_message = f"\n\nError: Invalid Input!\n"
                         appointment = list(available_appointments.values())[choice - 1]
                         self.mpms.book_appointment(appointment.appointment_id, self.current_user.email)
                         available_appointments = self.mpms.get_available_appointments()

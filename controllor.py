@@ -204,7 +204,7 @@ class MPMS:
         except Exception as e:
             raise ValueError(f"Failed to update clinic: {e}")
     
-    def create_appointment(self, gp_id, clinic_id, date, time, duration, reason):
+    def create_appointment(self, gp_id, clinic_id, date, time, duration):
         try:
             new_appointment = Appointment(
                 appointment_id=None,
@@ -215,8 +215,7 @@ class MPMS:
                 clinic_suburb=self.clinics[clinic_id].clinic_suburb,
                 date=date,
                 time=time,
-                duration=duration,
-                reason=reason
+                duration=duration
             )
         except Exception as e:
             raise ValueError(f"Failed to Greate appointment: {e}")
@@ -244,6 +243,7 @@ class MPMS:
             appointment.patient_email = None
             appointment.patient_name = ""
             appointment.availability = True
+            appointment.reason = ""
             if self.patients[email].last_booking_date == datetime.date.today():
                 self.patients[email].last_booking_date = None
             self.save_data('AP')
@@ -256,16 +256,18 @@ class MPMS:
             appointment.patient_email = None
             appointment.patient_name = ""
             appointment.availability = True
+            appointment.reason = ""
             self.save_data('AP')
         except Exception as e:
             raise ValueError(f"Failed to release appointment: {e}")
     
-    def book_appointment(self, appointment_id, email):
+    def book_appointment(self, appointment_id, email, reason):
         try:
             appointment = self.appointments[appointment_id]
             appointment.patient_email = email
             appointment.patient_name = f"{self.patients[email].first_name} {self.patients[email].last_name}"
             appointment.availability = False
+            appointment.reason = reason
             self.patients[email].last_booking_date = datetime.date.today()
             self.save_data('AP')
         except Exception as e:
