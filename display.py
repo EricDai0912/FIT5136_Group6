@@ -973,6 +973,56 @@ class Display:
             except ValueError as e:
                 self.status_message = f"\n\nError: {e} Please try again\n"
             self.admin_show_report(report, "Report on Patient Volume per GP", start_date, end_date)
+
+    def admin_clinic_report(self):
+        while True:
+            self.clear_and_header("Report on Patient Volume per Clinic")
+            print("\nList of all clinics:\n")
+            self.print_table(self.mpms.clinics)
+            print("\n0: Exit")
+            choice = input("\nPlease enter an option: ").strip()
+            if choice == '0':
+                return
+            try:
+                choice = int(choice)
+                if 1 <= choice <= len(self.mpms.clinics):
+                    cid = list(self.mpms.clinics.values())[choice - 1].clinic_id
+                    clinic_name = self.mpms.clinics[cid].clinic_name
+                    while True:
+                        self.clear_and_header(f"Report on Patient Volume {clinic_name}")
+                        print("\nDate Range of the Report:\n")
+                        print("1: Today")
+                        print("2: Last 7 Days")
+                        print("3: Last 30 Days")
+                        print("4: Custom Range")
+                        print("0: Exit")
+                        choice = input("\nPlease enter an option to generate the report: ").strip()
+                        if choice == '0':
+                            break
+                        elif choice == '1':
+                            start_date = datetime.datetime.now().date()
+                            end_date = start_date
+                        elif choice == '2':
+                            start_date = datetime.datetime.now().date() - datetime.timedelta(days=7)
+                            end_date = datetime.datetime.now().date()
+                        elif choice == '3':
+                            start_date = datetime.datetime.now().date() - datetime.timedelta(days=30)
+                            end_date = datetime.datetime.now().date()
+                        elif choice == '4':
+                            start_date, end_date = self.admin_report_custom_range()
+                        else:
+                            self.status_message = "\nError: Invalid option, please try again.\n"
+                            continue
+                        try:
+                            report = self.mpms.generate_clinic_report(cid, start_date, end_date)
+                        except ValueError as e:
+                            self.status_message = f"\n\nError: {e} Please try again\n"
+                        self.admin_show_report(report, f"Report on Patient Volume of {clinic_name}", start_date, end_date)
+                else:
+                    raise ValueError
+            except ValueError:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+                continue
             
 
     def patient_menu(self):
@@ -996,10 +1046,12 @@ class Display:
             else:
                 self.status_message = "\nError: Invalid option, please try again.\n"
 
+
     def admin_menu(self):
         while True:
             self.clear_and_header("Admin Menu")
             print("1: Report on Patient Volume per GP")
+            print("1: Report on Patient Volume per Clinic")
             print("3: Appointment Management")
             print("4: GP Management")
             print("5: Clinic Management")
@@ -1009,10 +1061,12 @@ class Display:
             if choice == '1':
                 self.admin_gp_report()
             elif choice == '2':
-                self.admin_appointment_management()
+                self.admin_clinic_report()
             elif choice == '3':
-                self.admin_gp_management()
+                self.admin_appointment_management()
             elif choice == '4':
+                self.admin_gp_management()
+            elif choice == '5':
                 self.admin_clinic_management()
             elif choice == '0':
                 print("\nLogging out...")

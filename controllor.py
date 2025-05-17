@@ -5,7 +5,9 @@ from gp import GP
 from clinic import Clinic
 from appointment import Appointment
 from gp_report import GPReport
+from clinic_report import ClinicReport
 import datetime
+from collections import defaultdict
 
 class MPMS:
 
@@ -266,8 +268,8 @@ class MPMS:
         try:
             if title == 'Report on Patient Volume per GP':
                 file_path = FileIO.write_report_csv(report, f"{start_date}_{end_date}_gp")
-            elif type == 'clinic':
-                pass
+            else:
+                file_path = FileIO.write_report_csv(report, f"{start_date}_{end_date}_{title.split(" of ", 1)[1]}")
             return file_path
         except Exception as e:
             raise ValueError(f"Failed to export report to CSV: {e}")
@@ -316,6 +318,45 @@ class MPMS:
             raise ValueError(f"Failed to generate GP report: {e}")
 
         return gp_report
+    
+    def generate_clinic_report(self,
+                               cid,
+                               start_date,
+                               end_date):
+        each_entry = {
+            'total_patients': 0,
+            'appointments_per_gp':   defaultdict(int),
+            'reasons':        set(),
+            'hour_counts':    defaultdict(int)
+        }
+
+        for appointment in self.appointments.values():
+            if (not appointment.availability
+               and appointment.clinic_id == cid
+               and start_date <= appointment.date <= end_date):
+                each_entry['total_patients'] += 1
+                each_entry['appointments_per_gp'][appointment.gp_name] += 1
+                each_entry['reasons'].add(appointment.reason or 'Unknown')
+                hour = appointment.time.strftime("%H:00")
+                each_entry['hour_counts'][hour] += 1
+
+        if each_entry['hour_counts']:
+            max_count = max(each_entry['hour_counts'].values())
+            peak_hours = [h for h, cnt in each_entry['hour_counts'].items() if cnt == max_count]
+            peak_hours.sort()
+        else:
+            peak_hours = []
+
+        clinic = self.clinics[cid]
+        clinic_report = ClinicReport(
+            clinic_name    = clinic.clinic_name,
+            total_patients = each_entry['total_patients'],
+            appts_per_gp   = dict(each_entry['appointments_per_gp']),
+            reasons        = each_entry['reasons'],
+            peak_hours     = peak_hours
+        )
+
+        return {1: clinic_report}
     
     def save_data(self, code):
         if code == 'P' or code == 'A':
