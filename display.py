@@ -791,7 +791,7 @@ class Display:
             except ValueError:
                 self.status_message = f"\n\nError: Invalid Input!\n"
     
-    def patient_book_appointments(self):
+    def patient_list_appointments(self):
         available_appointments = self.mpms.get_available_appointments()
         while True:
             self.clear_and_header("Available Appointments")
@@ -808,51 +808,13 @@ class Display:
             if choice == '0':
                 return
             elif choice == 'f1':
-                while True:
-                    self.clear_and_header("Filter Appointments by Date")
-                    print("\nenter 'exit' to exit")
-                    print("\nDate:")
-                    print("   *Format dd/mm/yyyy ")
-                    date = input("> ").strip()
-                    if Validation.is_valid_date(date):
-                        available_appointments = self.mpms.get_available_appointments_by_date(
-                            datetime.datetime.strptime(date, "%d/%m/%Y").date())
-                        break
-                    elif date == 'exit':
-                        break
-                    else:
-                        self.status_message = f"\n\nError: Invalid Input!\n"
+                available_appointments = self.patient_filter_date()
                 continue
             elif choice == 'f2':
-                while True:
-                    self.clear_and_header("Filter Appointments by GP")
-                    print("\nList of all gps:\n")
-                    self.print_table(self.mpms.gps)
-                    print("\n0: Exit")
-                    choice = input("\nPlease enter an choose an gp: ").strip()
-                    if choice == '0':
-                        break
-                    try:
-                        idx = int(choice)
-                        if 1 <= idx <= len(self.mpms.gps):
-                            available_appointments = self.mpms.get_available_appointments_by_gp_id(idx)
-                            break
-                        else:
-                            raise ValueError
-                    except ValueError:
-                        self.status_message = f"\n\nError: Invalid Input!\n"
+                available_appointments = self.patient_filter_gp()
                 continue
             elif choice == 'f3':
-                while True:
-                    self.clear_and_header("Filter Appointments by Clinic Suburb")
-                    print("\nenter 'exit' to exit")
-                    print("\nClinic Suburb:")
-                    clinic_suburb = input("> ").strip()
-                    if not Validation.is_empty(clinic_suburb):
-                        available_appointments = self.mpms.get_available_appointments_by_clinic_suburb(clinic_suburb)
-                        break
-                    else:
-                        self.status_message = f"\n\nError: Invalid Input!\n"
+                available_appointments = self.patient_filter_clinic_suburb()
                 continue
             elif choice == 'f4':
                 available_appointments = self.mpms.get_available_appointments()
@@ -860,26 +822,158 @@ class Display:
             try:
                 choice = int(choice)
                 if 1 <= choice <= len(available_appointments):
-                    if self.mpms.check_patient_booking_access(self.current_user.email):
-                        while True:
-                            self.clear_and_header("Book an Appointment")
-                            print("\nPlease enter your reason for visit:")
-                            print("   * General Consultation/Specialist Referral/Vaccination/Other")
-                            reason = input("> ").strip()
-                            if reason in ['General Consultation', 'Specialist Referral', 'Vaccination', 'Other']:
-                                break
-                            else:
-                                self.status_message = f"\n\nError: Invalid Input!\n"
-                        appointment = list(available_appointments.values())[choice - 1]
-                        self.mpms.book_appointment(appointment.appointment_id, self.current_user.email)
-                        available_appointments = self.mpms.get_available_appointments()
-                        self.patient_booking_success(self.current_user.first_name, appointment.appointment_id)
-                    else:
-                        self.status_message = f"\n\nError: You have already booked an appointment today!\n"
+                    available_appointments = self.patient_book_appointments(choice, available_appointments)
                 else:
                     raise ValueError
             except ValueError:
                 self.status_message = f"\n\nError: Invalid Input!\n"
+    
+    def patient_book_appointments(self, idx, available_appointments):
+        if self.mpms.check_patient_booking_access(self.current_user.email):
+            while True:
+                self.clear_and_header("Book an Appointment")
+                print("\nPlease enter your reason for visit:")
+                print("   * General Consultation/Specialist Referral/Vaccination/Other")
+                reason = input("> ").strip()
+                if reason in ['General Consultation', 'Specialist Referral', 'Vaccination', 'Other']:
+                    break
+                else:
+                    self.status_message = f"\n\nError: Invalid Input!\n"
+            appointment = list(available_appointments.values())[idx - 1]
+            self.mpms.book_appointment(appointment.appointment_id, self.current_user.email, reason)
+            available_appointments = self.mpms.get_available_appointments()
+            self.patient_booking_success(self.current_user.first_name, appointment.appointment_id)
+        else:
+            self.status_message = f"\n\nError: You have already booked an appointment today!\n"
+        return available_appointments
+    
+    def patient_filter_date(self):
+        while True:
+            self.clear_and_header("Filter Appointments by Date")
+            print("\nenter 'exit' to exit")
+            print("\nDate:")
+            print("   *Format dd/mm/yyyy ")
+            date = input("> ").strip()
+            if Validation.is_valid_date(date):
+                available_appointments = self.mpms.get_available_appointments_by_date(
+                    datetime.datetime.strptime(date, "%d/%m/%Y").date())
+                break
+            elif date == 'exit':
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        return available_appointments
+        
+    def patient_filter_clinic_suburb(self):
+        while True:
+            self.clear_and_header("Filter Appointments by Clinic Suburb")
+            print("\nenter 'exit' to exit")
+            print("\nClinic Suburb:")
+            clinic_suburb = input("> ").strip()
+            if not Validation.is_empty(clinic_suburb):
+                available_appointments = self.mpms.get_available_appointments_by_clinic_suburb(clinic_suburb)
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        return available_appointments
+    
+    def patient_filter_gp(self):
+        while True:
+            self.clear_and_header("Filter Appointments by GP")
+            print("\nList of all gps:\n")
+            self.print_table(self.mpms.gps)
+            print("\n0: Exit")
+            choice = input("\nPlease enter an choose an gp: ").strip()
+            if choice == '0':
+                break
+            try:
+                idx = int(choice)
+                if 1 <= idx <= len(self.mpms.gps):
+                    available_appointments = self.mpms.get_available_appointments_by_gp_id(idx)
+                    break
+                else:
+                    raise ValueError
+            except ValueError:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        return available_appointments
+    
+    def admin_report_custom_range(self):
+        while True:
+            self.clear_and_header("Custom Range")
+            print("\nStart Date:")
+            print("   *Format dd/mm/yyyy ")
+            start_date = input("> ").strip()
+            if Validation.is_valid_date(start_date):
+                start_date = datetime.datetime.strptime(start_date, "%d/%m/%Y").date()
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+
+        while True:
+            self.clear_and_header("Custom Range")
+            print("\nEnd Date:")
+            print("   *Format dd/mm/yyyy ")
+            end_date = input("> ").strip()
+            if Validation.is_valid_date(end_date):
+                end_date = datetime.datetime.strptime(end_date, "%d/%m/%Y").date()
+                break
+            else:
+                self.status_message = f"\n\nError: Invalid Input!\n"
+        
+        return start_date, end_date
+    
+    def admin_show_report(self, report, title, start_date, end_date):
+        while True:
+            self.clear_and_header(title)
+            print(f"\nDate Range: {start_date} to {end_date}")
+            self.print_table(report)
+            print("\n\n\n1: Export to csv\n")
+            print("0: Exit\n")
+            choice = input("\nPlease enter an option: ").strip()
+            if choice == '1':
+                try:
+                    file_path = self.mpms.export_report_to_csv(report, title, start_date, end_date)
+                    self.status_message = f"\nExported successfully to \'./{file_path}\'\n"
+                except ValueError as e:
+                    self.status_message = f"\nExport failed: {e}\n"
+            elif choice == '0':
+                return
+            else:
+                self.status_message = "\nError: Invalid option, please try again.\n"
+
+
+    def admin_gp_report(self):
+        while True:
+            self.clear_and_header("Report on Patient Volume per GP")
+            print("\nDate Range of the Report:\n")
+            print("1: Today")
+            print("2: Last 7 Days")
+            print("3: Last 30 Days")
+            print("4: Custom Range")
+            print("0: Exit")
+            choice = input("\nPlease enter an option to generate the report: ").strip()
+            if choice == '0':
+                return
+            elif choice == '1':
+                start_date = datetime.datetime.now().date()
+                end_date = start_date
+            elif choice == '2':
+                start_date = datetime.datetime.now().date() - datetime.timedelta(days=7)
+                end_date = datetime.datetime.now().date()
+            elif choice == '3':
+                start_date = datetime.datetime.now().date() - datetime.timedelta(days=30)
+                end_date = datetime.datetime.now().date()
+            elif choice == '4':
+                start_date, end_date = self.admin_report_custom_range()
+            else:
+                self.status_message = "\nError: Invalid option, please try again.\n"
+                continue
+            try:
+                report = self.mpms.generate_gp_report(start_date, end_date)
+            except ValueError as e:
+                self.status_message = f"\n\nError: {e} Please try again\n"
+            self.admin_show_report(report, "Report on Patient Volume per GP", start_date, end_date)
+            
 
     def patient_menu(self):
         while True:
@@ -891,7 +985,7 @@ class Display:
             choice = input("\nPlease enter an option: ").strip()
 
             if choice == '1':
-                self.patient_book_appointments()
+                self.patient_list_appointments()
             elif choice == '2':
                 self.patient_upcoming_appointments()
             elif choice == '3':
@@ -905,6 +999,7 @@ class Display:
     def admin_menu(self):
         while True:
             self.clear_and_header("Admin Menu")
+            print("1: Report on Patient Volume per GP")
             print("3: Appointment Management")
             print("4: GP Management")
             print("5: Clinic Management")
@@ -912,12 +1007,12 @@ class Display:
             choice = input("\nPlease enter an option: ").strip()
 
             if choice == '1':
-                pass
-            elif choice == '3':
+                self.admin_gp_report()
+            elif choice == '2':
                 self.admin_appointment_management()
-            elif choice == '4':
+            elif choice == '3':
                 self.admin_gp_management()
-            elif choice == '5':
+            elif choice == '4':
                 self.admin_clinic_management()
             elif choice == '0':
                 print("\nLogging out...")

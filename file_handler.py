@@ -10,6 +10,7 @@ class FileIO:
     GPS_CSV_PATH = './gps.csv'
     CLINICS_CSV_PATH = './clinics.csv'
     APPOINTMENTS_CSV_PATH = './appointments.csv'
+    REPORT_CSV_SUFFIX = '_report.csv'
     
     @staticmethod
     def write_clinics_csv(clinics):
@@ -78,6 +79,22 @@ class FileIO:
                 if isinstance(row.get('time'), datetime.time):
                     row['time'] = row['time'].strftime("%H:%M")
                 writer.writerow(row)
+    
+    @staticmethod
+    def write_report_csv(report, file_path_prefix):
+        if not report:
+            raise ValueError("Report is empty, nothing to write.")
+        
+        file_path = file_path_prefix + FileIO.REPORT_CSV_SUFFIX
+        first = next(iter(report.values()))
+        headers = list(first.to_print_dict().keys())
+
+        with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+            writer.writeheader()
+            for item in report.values():
+                writer.writerow(item.to_print_dict())
+        return file_path
     
     @staticmethod
     def read_patients_csv():

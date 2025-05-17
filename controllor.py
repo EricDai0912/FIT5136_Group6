@@ -4,6 +4,7 @@ from file_handler import FileIO
 from gp import GP
 from clinic import Clinic
 from appointment import Appointment
+from gp_report import GPReport
 import datetime
 
 class MPMS:
@@ -261,6 +262,16 @@ class MPMS:
         except Exception as e:
             raise ValueError(f"Failed to release appointment: {e}")
     
+    def export_report_to_csv(self, report, title, start_date, end_date):
+        try:
+            if title == 'Report on Patient Volume per GP':
+                file_path = FileIO.write_report_csv(report, f"{start_date}_{end_date}_gp")
+            elif type == 'clinic':
+                pass
+            return file_path
+        except Exception as e:
+            raise ValueError(f"Failed to export report to CSV: {e}")
+        
     def book_appointment(self, appointment_id, email, reason):
         try:
             appointment = self.appointments[appointment_id]
@@ -272,6 +283,39 @@ class MPMS:
             self.save_data('AP')
         except Exception as e:
             raise ValueError(f"Failed to book appointment: {e}")
+    
+    def generate_gp_report(self, start_date, end_date):
+        try:
+            data_entries = {}
+            for appointment in self.appointments.values():
+                if not appointment.availability and start_date <= appointment.date <= end_date:
+                    gid = appointment.gp_id
+                    if gid not in data_entries:
+                        data_entries[gid] = {
+                            'gp_name': appointment.gp_name,
+                            'clinic_suburbs': set(),
+                            'total_patients': 0,
+                            'reasons': set()     
+                        }
+                    each_entry = data_entries[gid]
+                    each_entry['clinic_suburbs'].add(appointment.clinic_suburb)
+                    each_entry['total_patients'] += 1
+                    each_entry['reasons'].add(appointment.reason or 'Unknown')
+
+            gp_report = {}
+            idx = 1
+            for each_entry in data_entries.values():
+                gp_report[idx] = GPReport(
+                    gp_name=each_entry['gp_name'],
+                    clinic_suburb=', '.join(each_entry['clinic_suburbs']),
+                    total_patients=each_entry['total_patients'],
+                    reasons=each_entry['reasons'] 
+                )
+                idx += 1
+        except Exception as e:
+            raise ValueError(f"Failed to generate GP report: {e}")
+
+        return gp_report
     
     def save_data(self, code):
         if code == 'P' or code == 'A':
